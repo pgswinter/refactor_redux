@@ -27,39 +27,155 @@ import deepFreeze from 'deep-freeze';
 import expect from 'expect';
 import './index.css';
 import registerServiceWorker from './registerServiceWorker';
-import {registerAPI} from './Api/postUser'
-// const counter = (state = 1, action) => {
-//   switch (action.type){
-//     case 'INCREMENT':
-//       return state + 1;
-//     case 'DECREMENT':
-//       return state - 1;
-//     default:
-//       return state;
-//   }
+import {registerAPI} from './Api/postUser';
+import {updateAPI} from './Api/postUser';
+import {deleteAPI} from './Api/postUser';
+import {getAPI} from './Api/postUser';
+import {getByIdAPI} from './Api/postUser';
+const counter = (state = 1, action) => {
+  switch (action.type){
+    case 'INCREMENT':
+      return state + 1;
+    case 'DECREMENT':
+      return state - 1;
+    default:
+      return state;
+  }
+}
+
+// current state is display status of data/value
+// AND current state also display current data/value
+const flowState = {
+	statusOfData:{
+		isLoading: false,
+		isInfo: null,
+		wasError: null
+	}
+}
+
+// Cách sử dụng STATE trong REDUCER. Ban đầu STATE là 1 array rỗng []
+// Data được load bởi ACTION. Bất kỳ hành động thực thi nào cũng được gọi từ ACTION
+// Vậy thì ACTION goi từ đâu. Action được mô tả ngay trong REDUCER như ví dụ: 
+// data: action.data
+// Vậy thì ACTION được tạo ra và thực thi ở đâu. Ở đây có 2 cách giải thích
+// 1. ACTION được khởi tạo từ một đối tượng riêng biệt như thế này:
+//	const stateBefore = []
+//  const action = {
+// 		type: 'GET_DATA',
+// 		data: getAPI()
+// 	};
+// Nhưng khi truyền vào STORE chúng ta phải chạy REDUCER như một function. Điều này trái với nguyên tắc của REDUX
+// Nó sẽ phải truyền như vậy: testDisplays(stateBefore,action).
+// Và thành ra như thế này: const store = createStore(testDisplays(stateBefore,action).); Điều này sai với nguyên tắc REDUX như đã nói ở trên
+// Vì vậy chúng ta chỉ sử dụng cách này để Unit Test mà thôi. Kiểu tra kết quả đầu ra của REDUCER.
+// 2. Chúng ta truyền REDUCER vào STORE bình thường: const store = createStore(testDisplays);
+// Sau đó ACTION được thực thì từ DISPATCH gọi từ STORE. Như thế này:
+// store.dispatch({
+// 	type: 'ADD_TODO',
+// 	id: 0,
+// 	text: 'Learn Redux'
+// });
+// Lúc này chúng ta thỏa mãn được đầy đủ các nguyên tắc của REDUX, cũng là tác dụng của DISPATCH.
+// DISPATCH để thực thi một ACTION trong REDUCER để REDUCER không cần phải gọi đối tượng ACTION khởi tạo nào khác.
+// Tránh tình trạng biến REDUCER thành 1 function
+
+// Đối với REDUCER chỉ thực thi tác vụ. Có thể trả về tác vụ đó ngay trong reducer. Không cần phải trả về từ DISPATCH...
+
+// 3 nguyên tắc REDUX
+// 1. Cây STATE là bất biến
+// 2. STATE chỉ thay đổi khi được gọi từ ACTION
+// 3. Để thay đổi STATE phải viết function có PREVIOUS STATE
+// ACTION phải được DISPATCH và trả về NEXT STATE
+
+const display = (state, action) => {
+	switch(action.type){
+		case 'GET_DATA':
+			return {
+				data: action.data
+			}
+		default:
+			return state;
+	}
+}
+
+// const testDisplays = (state = [], action) => {
+// 	switch(action.type){
+// 		case 'GET_DATA':
+// 			return [
+// 				...state,
+// 				display(undefined,action)
+// 			]
+// 		default:
+// 			return state;
+// 	}
 // }
 
-const register = (state=[],action) => {
-	const data = {
-		"firstName": "Long",
-		"lastName": "Nguyen",
-		"email": "longnguyen@gmail.com",
-		"age": 18,
-		"companyId": "1",
+const testDisplayById = (state = flowState, action) => {
+	switch(action.type){
+		case 'GET_DATA_BY_ID':
+			state.statusOfData.isInfo = getAPI(5)
+			return state
+		default:
+			return state
+	}
+}
+
+const register = (state,action) => {
+	const inputData = {
+		"name": "Product007",
+		"cost": 88,
+		"quantity": 888,
+		"locationId": 2,
+		"familyId": 2
 	}
 	const {insertData} = action
 	switch(action.type){
 		case 'REGISTER':
 			return {
 				...state,
-				insertData: registerAPI(data)
+				insertData: registerAPI(inputData)
 			}
+		default:
+			return state
+	}
+}
+
+const testEdit = (state,action) => {
+	const data = {
+		"name": "Product001",
+		"cost": 10,
+		"quantity": 10,
+		"locationId": 1,
+		"familyId": 2
+    }
+	const {updateData} = action
+	switch(action.type){
+		case 'UPDATE_DATA':
+			return {
+				...state,
+				updateData: updateAPI(data,1)
+			}
+		default:
+			return state
+	}
+}
+
+const testDelete = (state,action) => {
+	const {deleteData} = action
+	switch(action.type){
+		case 'DELETE_DATA':
+			return {
+				...state,
+				deleteData: deleteAPI(5)
+			}
+		default:
+			return state
 	}
 }
 
 // const Counter = ({
 //   value,
-//   onIncrement,
+//   onIncrement, 
 //   onDecrement
 // }) => 
 // 	<div className="">
@@ -69,14 +185,36 @@ const register = (state=[],action) => {
 // 	</div>
 
 const InsertButton = ({
-	onInsert
+	onInsert,
+	onUpdate,
+	onDelete,
+	onLoad,
+	onLoadById
 }) =>
-	<div className="">
-		<button onClick={onInsert}>Add</button>
+	<div className="container">
+		<div className="loading_data__container">
+			
+		</div>
+		<div className="control_center__container">
+			<button onClick={onInsert}>Add</button>
+			<button onClick={onUpdate}>Update</button>
+			<button onClick={onDelete}>Delete</button>
+			<button onClick={onLoad}>Load</button>
+			<button onClick={onLoadById}>Load By ID</button>
+		</div>
 	</div>
+	
+
+// const registerApp = combineReducers({
+// 	testDisplays
+// })
 
 // const store = createStore(counter);
-const store = createStore(register);
+// const store = createStore(register);
+// const store = createStore(testEdit);
+// const store = createStore(testDelete);
+const store = createStore(display);
+// const store = createStore(testDisplayById);
 
 // const render = () => {
 // 	ReactDOM.render(
@@ -99,9 +237,38 @@ const store = createStore(register);
 const render = () => {
 	ReactDOM.render(
 		<InsertButton
+		  // dataLoading={store.getState()}
 	      onInsert={()=>
 	      	store.dispatch({
 	      		type: 'REGISTER'
+	      	})
+	      }
+	      onUpdate={()=>
+	      	store.dispatch({
+	      		type: 'UPDATE_DATA'
+	      	})
+	      }
+	      onDelete={()=>
+	      	store.dispatch({
+	      		type: 'DELETE_DATA'
+	      	})
+	      }
+	      onLoad={()=>{
+		      	store.dispatch({
+		      		type: 'GET_DATA',
+		      		data: getAPI()
+		      	})
+		      	async function asynCall(){
+		      		console.log('calling');
+		      		const result = await store.getState().data;
+		      		console.log(result)
+		      	}
+		      	asynCall()
+	      	}
+	      }
+	      onLoadById={()=>
+	      	store.dispatch({
+	      		type: 'GET_DATA_BY_ID'
 	      	})
 	      }
 	    />
@@ -111,7 +278,7 @@ const render = () => {
 store.subscribe(render);
 render();
 
-registerServiceWorker();
+// registerServiceWorker();
 
 /* --------------------- SPLIT PART --------------------- */
 
@@ -164,28 +331,28 @@ registerServiceWorker();
 // 	}
 // }
 
-// // const testAddTodo = () => {
-// // 	const stateBefore = [];
-// // 	const action = {
-// // 		type: 'ADD_TODO',
-// // 		id: 0,
-// // 		text: 'Learn Redux'
-// // 	};
-// // 	const stateAfter = [
-// // 		{
-// // 			id: 0,
-// // 			text: 'Learn Redux',
-// // 			completed: false
-// // 		}
-// // 	];
+// const testAddTodo = () => {
+// 	const stateBefore = [];
+// 	const action = {
+// 		type: 'ADD_TODO',
+// 		id: 0,
+// 		text: 'Learn Redux'
+// 	};
+// 	const stateAfter = [
+// 		{
+// 			id: 0,
+// 			text: 'Learn Redux',
+// 			completed: false
+// 		}
+// 	];
 
-// // 	deepFreeze(stateBefore);
-// // 	deepFreeze(action);
+// 	deepFreeze(stateBefore);
+// 	deepFreeze(action);
 
-// // 	expect(
-// // 		todos(stateBefore,action)
-// // 	).toEqual(stateAfter)
-// // }
+// 	expect(
+// 		todos(stateBefore,action)
+// 	).toEqual(stateAfter)
+// }
 
 // const testToggleTodo = () => {
 // 	const stateBefore =  [
@@ -225,7 +392,7 @@ registerServiceWorker();
 // 	).toEqual(stateAfter)
 // }
 
-// // testAddTodo();
+// testAddTodo();
 // testToggleTodo();
 // console.log('All test passed');
 

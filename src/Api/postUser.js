@@ -25,10 +25,47 @@ const request = (url, options) =>
 	});
 export const registerAPI = data => {
 	return request(
-			'http://localhost:3100/users',
+			'http://localhost:3200/products',
 			{
 				method:'post',
 				data
+			}
+		)
+}
+
+export const updateAPI = (data,id) => {
+	return request(
+			`http://localhost:3200/products/${id}`,
+			{
+				method:'put',
+				data
+			}
+		)
+}
+
+export const deleteAPI = (id) => {
+	return request(
+			`http://localhost:3200/products/${id}`,
+			{
+				method:'delete'
+			}
+		)
+}
+
+export const getAPI = () => {
+	return request(
+			`http://localhost:3200/products/`,
+			{
+				method:'get'
+			}
+		)
+}
+
+export const getByIdAPI = (id) => {
+	return request(
+			`http://localhost:3200/products/${id}`,
+			{
+				method:'get'
 			}
 		)
 }
