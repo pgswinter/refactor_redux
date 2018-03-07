@@ -1,14 +1,17 @@
-import { createStore, applyMiddleware, compose } from 'redux';
-import thunk from 'redux-thunk';
-// import todoApp from './reducers/TodoAppReducers';
-import authReducer from './reducers/RegisterReducers';
-
-// const rootReducer = todoApp
-const rootReducer = authReducer
-const initialState = {};
-
-const composedEnhancers = compose(applyMiddleware(thunk));
-
-const store = createStore(rootReducer, initialState, composedEnhancers);
-
-export default store;
+import { createStore, applyMiddleware } from 'redux'
+import thunkMiddleware from 'redux-thunk'
+import { createLogger } from 'redux-logger'
+import rootReducer from './reducers/RegisterReducers'
+ 
+const loggerMiddleware = createLogger()
+ 
+export default function configureStore(preloadedState) {
+  return createStore(
+    rootReducer,
+    preloadedState,
+    applyMiddleware(
+      thunkMiddleware,
+      loggerMiddleware
+    )
+  )
+}

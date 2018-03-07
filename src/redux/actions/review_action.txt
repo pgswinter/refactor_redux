@@ -1,0 +1,2 @@
+ACTION là JS Object itself 
+ACTION CREATOR là một function return một actions

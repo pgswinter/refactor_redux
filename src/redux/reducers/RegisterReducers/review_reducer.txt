@@ -1,0 +1,79 @@
+Actions được dùng ở Containers,gồm:
+- selectSubreddit
+- fetchPostsIfNeeded
+- invalidateSubreddit
+
+Reducer được dùng ở Container, lấy từ store nhớ mapStateToProps, gồm:
+- postsBySubreddit
+- selectedSubreddit
+
+Rồi bây h tìm hiểu xem từng chức năng của ACTIONs và REDUCER thể hiện ntn ở Containers
+
+Mọi thứ đi từ cái STORE mà ra, các module xung quanh cũng chỉ là thiết kế để hợp mọi dữ liệu về STORE thôi:
+
+- Từ STORE ta có được REDUCER
+- Chuyển dữ liệu từ REDUCER trong STORE thành props : mapStateToProps
+- Chuyển dữ liệu từ ACTIONS trong REDUCER trong STORE thành props: mapDispatchToProps
+- ACTION sử dụng các API (middleware trước khi đi vào REDUCER)
+- DISPACH là một phần của STORE
+
+ACTION KHI DỮ LIỆU ĐƯỢC LOAD NTN?
+
+1. selectSubreddit: được gọi = dispatch từ props. Sao lại thế.
+Tức là nếu gọi hàm trực tiếp từ actions sẽ chẳng có ý nghĩa gì cả.
+Nó đơn giản chỉ thế này: 
+return {
+    type: SELECT_SUBREDDIT,
+    subreddit
+  }
+- Khi đi từ this.props.selectSubreddit. Nó đi từ view hiện tại đến action file.
+
+ + return {
+    type: SELECT_SUBREDDIT,
+    subreddit
+  }
+ + tại types: SELECT_SUBREDDIT được import tiếp theo ở REDUCER và tiếp tục được trả về với STATE
+ đặt là 'product'
+
+	function selectedSubreddit(state = 'products', action) {
+		switch (action.type) {
+			case SELECT_SUBREDDIT:
+			  return action.subreddit
+			default:
+			  return state
+		}
+	}
+ + rồi được combine ở combineReducers
+ + tiếp tục được lưu lại trong store chờ xử lý. Ta hãy gọi là 1*
+2. fetchPostsIfNeeded(selectedSubreddit): được gọi = dispatch từ props. với đối số "selectedSubreddit" như phần 1 có đề cập là "product"
+
+- rồi bây h từ view đi vào actions. "fetchPostsIfNeeded" nó trả về
+	+ return (dispatch, getState) => {
+	    if (shouldFetchPosts(getState(), subreddit)) {
+	      return dispatch(fetchPosts(subreddit))
+	    }
+	  }
+	+ "shouldFetchPosts" chứa 2 đối số "state" và "subreddit". "subreddit" này là tiêu mục category sẽ chọn
+	+ trong "shouldFetchPosts", state lại dùng "postsBySubreddit" từ đâu đến, từ REDUCER mà đến. Tại sao đang ở ACTIONs mà lại có REDUCER. Thực ra lúc này khi đi từ VIEW tất cả đã nằm trong STORE rồi.
+	Trong STORE lại có REDUCER , tất cả ACTIONs được import vào REDUCER rồi.
+	+ đặt 1 biến posts = state.postsBySubreddit[subreddit]
+	+ "posts" này qua các CASE:
+	case INVALIDATE_SUBREDDIT:
+    case RECEIVE_POSTS:
+    case REQUEST_POSTS:
+    + mỗi CASE chứa trạng thái của state 
+    state = {
+	    isFetching: false,
+	    didInvalidate: false,
+	    items: []
+	  }
+	+ nếu "posts" chưa thực hiện trả về true
+	+ nếu "posts.isFetching" chưa thực hiện trả về false
+	+ còn không thì trả về didInvalidate
+	+ ở đây ta xét đến trường hợp bt, tức là "isFetching"
+	+ lúc này "fetchPost(subreddit)" được dispatch. LÀ HÊT
+
+
+
+	
+

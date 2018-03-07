@@ -1,18 +1,17 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { Provider } from 'react-redux';
-import store from './redux/store';
-import TodoApp from './Containers/TodoApp';
-
-class App extends Component {
+import React, { Component } from 'react'
+import { Provider } from 'react-redux'
+import configureStore from './redux/store'
+import AsyncApp from './Containers/AsyncApp'
+// import AsyncApp from './Containers/MyAsyncApp'
+ 
+const store = configureStore()
+ 
+export default class Root extends Component {
   render() {
     return (
       <Provider store={store}>
-          <TodoApp />
+        <AsyncApp />
       </Provider>
-    );
+    )
   }
 }
-
-export default App;
